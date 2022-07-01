@@ -135,8 +135,21 @@ def quiet_option(f):
                         help='Silence warnings',
                         callback=callback)(f)
 
+def log_level_option(f):
+    def callback(ctx, param, value):
+        level = logging._nameToLevel.get(value, None)
+        state = ctx.ensure_object(State)
+        if level:
+            state.stream.setLevel(level)
+    return click.option('-l', '--log-level',
+                        is_flag=False,
+                        type=click.Choice(["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG", "NOTSET"]),
+                        expose_value=False,
+                        help='Enable to set log-level',
+                        show_choices=True,
+                        callback=callback)(f)
 
-common_options = add_options([quiet_option, verbose_option])
+common_options = add_options([quiet_option, verbose_option, log_level_option])
 common_config_options = add_options([
     click.option('-f', '--config-file', type=click.File('rb'), help=config_help),
     # Don't override config value if user did not specify --strict flag
